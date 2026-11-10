@@ -1,10 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Block, CalendarEntry, SupabaseConfig } from '../types';
+import type { Block, CalendarEntry, SupabaseConfig, BacklogItem } from '../types';
 
 const SUPABASE_CONFIG_KEY = 'planner_supabase_config';
 const LOCAL_BLOCKS_KEY = 'planner_local_blocks';
 const LOCAL_ENTRIES_KEY = 'planner_local_entries';
+const LOCAL_BACKLOG_KEY = 'planner_local_backlog';
 
 export function getStoredSupabaseConfig(): SupabaseConfig {
   const envUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -189,6 +190,55 @@ function getLocalEntriesCache(): CalendarEntry[] {
   return INITIAL_SAMPLE_ENTRIES;
 }
 
+const INITIAL_SAMPLE_BACKLOG: BacklogItem[] = [
+  {
+    id: 'backlog-thesis-ch3',
+    title: 'Draft Chapter 3 Methodology',
+    bullets: [
+      { id: 'bb1', text: 'Structure data collection approach', completed: false },
+      { id: 'bb2', text: 'Cite key benchmark datasets', completed: false },
+    ],
+    tagColor: 'olive',
+    status: 'backlog',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'backlog-code-review',
+    title: 'Solve LeetCode Top 75 Graphs',
+    bullets: [
+      { id: 'bb3', text: 'BFS / DFS cycle detection', completed: false },
+      { id: 'bb4', text: 'Dijkstra shortest path review', completed: false },
+    ],
+    tagColor: 'sage',
+    status: 'backlog',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'backlog-interview-prep',
+    title: 'Prepare System Design Mock Interview',
+    bullets: [
+      { id: 'bb5', text: 'Draft rate limiter architecture diagram', completed: false },
+      { id: 'bb6', text: 'Calculate QPS and cache size', completed: false },
+    ],
+    tagColor: 'amber',
+    status: 'backlog',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+];
+
+function getLocalBacklogCache(): BacklogItem[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_BACKLOG_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (err) {
+    console.error('Error reading local backlog cache:', err);
+  }
+  return INITIAL_SAMPLE_BACKLOG;
+}
+
 // ---------------------------------------------------------
 // Storage Adapters (Online Supabase Prioritized)
 // ---------------------------------------------------------
@@ -371,6 +421,7 @@ export async function saveCalendarEntryData(entry: CalendarEntry): Promise<void>
       const { error } = await client.from('calendar_entries').upsert({
         id: entry.id,
         block_id: entry.blockId || null,
+        backlog_item_id: entry.backlogItemId || null,
         title: entry.title,
         bullets: entry.bullets,
         tag_color: entry.tagColor,
@@ -424,12 +475,124 @@ export async function deleteCalendarEntryData(id: string): Promise<void> {
 }
 
 // ---------------------------------------------------------
+// Backlog Items Storage
+// ---------------------------------------------------------
+export async function fetchBacklogData(): Promise<BacklogItem[]> {
+  const client = getSupabaseClient();
+  if (client) {
+    try {
+      const { data, error } = await client
+        .from('backlog_items')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        if (data.length > 0) {
+          const items: BacklogItem[] = data.map((b) => ({
+            id: b.id,
+            title: b.title,
+            bullets: b.bullets || [],
+            tagColor: b.tag_color || 'sage',
+            status: b.status || 'backlog',
+            scheduledEntryId: b.scheduled_entry_id || undefined,
+            createdAt: b.created_at,
+            updatedAt: b.updated_at,
+          }));
+          localStorage.setItem(LOCAL_BACKLOG_KEY, JSON.stringify(items));
+          return items;
+        } else {
+          const localItems = getLocalBacklogCache();
+          if (localItems.length > 0) {
+            await Promise.all(
+              localItems.map((item) =>
+                client.from('backlog_items').upsert({
+                  id: item.id,
+                  title: item.title,
+                  bullets: item.bullets,
+                  tag_color: item.tagColor,
+                  status: item.status,
+                  scheduled_entry_id: item.scheduledEntryId || null,
+                  created_at: item.createdAt,
+                  updated_at: item.updatedAt,
+                })
+              )
+            );
+          }
+          return localItems;
+        }
+      }
+    } catch (err) {
+      console.warn('Supabase fetchBacklog network exception:', err);
+    }
+  }
+
+  return getLocalBacklogCache();
+}
+
+export async function saveBacklogItemData(item: BacklogItem): Promise<void> {
+  const client = getSupabaseClient();
+  if (client) {
+    try {
+      const { error } = await client.from('backlog_items').upsert({
+        id: item.id,
+        title: item.title,
+        bullets: item.bullets,
+        tag_color: item.tagColor,
+        status: item.status,
+        scheduled_entry_id: item.scheduledEntryId || null,
+        updated_at: new Date().toISOString(),
+      });
+      if (error) {
+        console.error('Supabase saveBacklogItem error:', error.message);
+      }
+    } catch (err) {
+      console.warn('Supabase saveBacklogItem failed:', err);
+    }
+  }
+
+  try {
+    const items = getLocalBacklogCache();
+    const idx = items.findIndex((i) => i.id === item.id);
+    if (idx >= 0) {
+      items[idx] = item;
+    } else {
+      items.unshift(item);
+    }
+    localStorage.setItem(LOCAL_BACKLOG_KEY, JSON.stringify(items));
+  } catch (err) {
+    console.error('Error saving local backlog item:', err);
+  }
+}
+
+export async function deleteBacklogItemData(id: string): Promise<void> {
+  const client = getSupabaseClient();
+  if (client) {
+    try {
+      const { error } = await client.from('backlog_items').delete().eq('id', id);
+      if (error) {
+        console.error('Supabase deleteBacklogItem error:', error.message);
+      }
+    } catch (err) {
+      console.warn('Supabase deleteBacklogItem failed:', err);
+    }
+  }
+
+  try {
+    const items = getLocalBacklogCache().filter((i) => i.id !== id);
+    localStorage.setItem(LOCAL_BACKLOG_KEY, JSON.stringify(items));
+  } catch (err) {
+    console.error('Error deleting local backlog item:', err);
+  }
+}
+
+// ---------------------------------------------------------
 // 1-Click Sync Local Data to Supabase
 // ---------------------------------------------------------
 export async function syncLocalToSupabase(): Promise<{
   success: boolean;
   blocksCount: number;
   entriesCount: number;
+  backlogCount?: number;
   message: string;
 }> {
   const client = getSupabaseClient();
@@ -445,6 +608,7 @@ export async function syncLocalToSupabase(): Promise<{
   try {
     const blocks = getLocalBlocksCache();
     const entries = getLocalEntriesCache();
+    const backlog = getLocalBacklogCache();
 
     if (blocks.length > 0) {
       const { error: bErr } = await client.from('blocks').upsert(
@@ -464,6 +628,7 @@ export async function syncLocalToSupabase(): Promise<{
         entries.map((e) => ({
           id: e.id,
           block_id: e.blockId || null,
+          backlog_item_id: e.backlogItemId || null,
           title: e.title,
           bullets: e.bullets,
           tag_color: e.tagColor,
@@ -477,11 +642,27 @@ export async function syncLocalToSupabase(): Promise<{
       if (eErr) throw new Error(`Calendar entries sync failed: ${eErr.message}`);
     }
 
+    if (backlog.length > 0) {
+      const { error: kErr } = await client.from('backlog_items').upsert(
+        backlog.map((item) => ({
+          id: item.id,
+          title: item.title,
+          bullets: item.bullets,
+          tag_color: item.tagColor,
+          status: item.status,
+          scheduled_entry_id: item.scheduledEntryId || null,
+          updated_at: new Date().toISOString(),
+        }))
+      );
+      if (kErr) throw new Error(`Backlog sync failed: ${kErr.message}`);
+    }
+
     return {
       success: true,
       blocksCount: blocks.length,
       entriesCount: entries.length,
-      message: `Successfully synced ${blocks.length} blocks and ${entries.length} calendar entries to Supabase!`,
+      backlogCount: backlog.length,
+      message: `Successfully synced ${blocks.length} blocks, ${entries.length} entries, and ${backlog.length} backlog items to Supabase!`,
     };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);

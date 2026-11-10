@@ -15,15 +15,31 @@ export interface Block {
   updatedAt: string;
 }
 
+export type BacklogStatus = 'backlog' | 'scheduled' | 'completed';
+
+export interface BacklogItem {
+  id: string;
+  title: string;
+  bullets: BulletPoint[];
+  tagColor: BlockColor;
+  status: BacklogStatus;
+  scheduledEntryId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type DrawerTab = 'templates' | 'backlog';
+
 export interface CalendarEntry {
   id: string;
-  blockId: string;
+  blockId?: string;
+  backlogItemId?: string;
   title: string;
   bullets: BulletPoint[];
   tagColor: BlockColor;
   date: string; // Format: YYYY-MM-DD
-  hour: number; // 8 to 21 (8:00 AM to 9:00 PM)
-  durationMinutes: number; // 30, 60, 90, 120
+  hour: number; // 0 to 23 (12:00 AM to 11:00 PM)
+  durationMinutes: number;
   notes?: string;
   completed?: boolean;
 }
