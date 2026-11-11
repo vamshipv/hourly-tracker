@@ -25,7 +25,7 @@ export const BacklogCard: React.FC<BacklogCardProps> = ({
   onDelete,
   onQuickSchedule,
 }) => {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const scheme = COLOR_SCHEMES[item.tagColor] || COLOR_SCHEMES.sage;
 
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -51,43 +51,37 @@ export const BacklogCard: React.FC<BacklogCardProps> = ({
         isDragging ? 'border-dashed scale-[0.99]' : ''
       } ${scheme.cardBorder} ${scheme.cardBg} ${scheme.cardBorderHover} shadow-xs hover:shadow-md transition-all duration-200 overflow-hidden select-none`}
     >
-      {/* Top Bar with Grab Handle, Tag, & Actions */}
-      <div className="flex items-center justify-between p-3.5 pb-2">
+      {/* Top Header: Grab Handle, Prominent Title, Actions & Collapse Chevron */}
+      <div className="flex items-start justify-between p-3.5 pb-2.5 gap-2">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {/* Draggable Grip Handle */}
           <button
             {...listeners}
             {...attributes}
             type="button"
-            className="cursor-grab active:cursor-grabbing p-1 rounded-lg text-[#7F867F] dark:text-[#8D958D] hover:text-[#222522] dark:hover:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+            className="cursor-grab active:cursor-grabbing p-1 -ml-1 rounded-lg text-[#7F867F] dark:text-[#8D958D] hover:text-[#222522] dark:hover:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors shrink-0"
             title="Drag to place into calendar slot"
           >
             <GripVertical className="w-4 h-4" />
           </button>
 
-          {/* Color Tag Badge */}
-          <span
-            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold tracking-wide uppercase ${scheme.badgeBg} ${scheme.badgeText}`}
-          >
-            <span
-              className="w-1.5 h-1.5 rounded-full"
-              style={{ backgroundColor: scheme.solid }}
-            />
-            {scheme.name}
-          </span>
+          {/* Bigger, Prominent Title */}
+          <h3 className="text-[15px] sm:text-base font-bold tracking-tight text-[#222522] dark:text-[#EDEBF2] leading-snug break-words flex-1 min-w-0">
+            {item.title}
+          </h3>
 
           {/* Scheduled Badge if item is in calendar */}
           {isScheduled && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-[#E5EEE6] dark:bg-[#2E2840] text-[#2D4532] dark:text-[#E2EB89]">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-[#E5EEE6] dark:bg-[#2E2840] text-[#2D4532] dark:text-[#E2EB89] shrink-0">
               <CheckCircle2 className="w-3 h-3" />
               Scheduled
             </span>
           )}
         </div>
 
-        {/* Action icons */}
-        <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-          {/* Quick Schedule Button (Single Click to assign to current/next free hour) */}
+        {/* Action icons & expand/collapse toggle */}
+        <div className="flex items-center gap-0.5 opacity-80 group-hover:opacity-100 transition-opacity shrink-0">
+          {/* Quick Schedule Button */}
           <button
             type="button"
             onClick={() => onQuickSchedule(item)}
@@ -116,24 +110,19 @@ export const BacklogCard: React.FC<BacklogCardProps> = ({
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
-        </div>
-      </div>
 
-      {/* Task Header & Expand Bullets Toggle */}
-      <div className="px-3.5 pb-2.5 flex items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold tracking-tight text-[#222522] dark:text-[#E5E3E0] leading-snug truncate">
-          {item.title}
-        </h3>
-        {item.bullets && item.bullets.length > 0 && (
-          <button
-            type="button"
-            onClick={() => setExpanded(!expanded)}
-            className="p-1 rounded-md text-[#7F867F] dark:text-[#8D958D] hover:text-[#222522] dark:hover:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors shrink-0"
-            title={expanded ? 'Collapse tasks' : 'Expand tasks'}
-          >
-            {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          </button>
-        )}
+          {/* Expand/Collapse Toggle */}
+          {item.bullets && item.bullets.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setExpanded(!expanded)}
+              className="p-1.5 rounded-lg text-[#7F867F] dark:text-[#8D958D] hover:text-[#222522] dark:hover:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+              title={expanded ? 'Collapse tasks' : 'Expand tasks'}
+            >
+              {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Expandable Bullets / Sub-tasks list */}

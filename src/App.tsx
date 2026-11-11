@@ -522,30 +522,15 @@ export function App() {
                 COLOR_SCHEMES[activeDragItem.item.tagColor].cardBg
               } shadow-2xl ring-2 ring-[#436249]/30 dark:ring-[#9D8EC9]/30 select-none cursor-grabbing backdrop-blur-md w-[320px] pointer-events-none`}
             >
-              {/* Header with tag badge */}
-              <div className="flex items-center justify-between pb-2">
-                <span
-                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold tracking-wide uppercase ${
-                    COLOR_SCHEMES[activeDragItem.item.tagColor].badgeBg
-                  } ${COLOR_SCHEMES[activeDragItem.item.tagColor].badgeText}`}
-                >
-                  <span
-                    className="w-1.5 h-1.5 rounded-full"
-                    style={{
-                      backgroundColor: COLOR_SCHEMES[activeDragItem.item.tagColor].solid,
-                    }}
-                  />
-                  {COLOR_SCHEMES[activeDragItem.item.tagColor].name}
-                </span>
-                <span className="text-[10px] font-medium text-[#7A827A] dark:text-[#9E9AA8] italic">
+              {/* Header with Prominent Title & Mode Hint */}
+              <div className="flex items-start justify-between pb-2 gap-2">
+                <h4 className="text-[15px] sm:text-base font-bold tracking-tight text-[#222522] dark:text-[#EDEBF2] truncate flex-1 min-w-0">
+                  {activeDragItem.item.title}
+                </h4>
+                <span className="text-[10px] font-medium text-[#7A827A] dark:text-[#9E9AA8] italic shrink-0">
                   {activeDragItem.type === 'BACKLOG_ITEM' ? 'Schedule task' : 'Drop into slot'}
                 </span>
               </div>
-
-              {/* Title */}
-              <h4 className="text-sm font-semibold tracking-tight text-[#222522] dark:text-[#EDEBF2] truncate">
-                {activeDragItem.item.title}
-              </h4>
 
               {/* Bullets Preview */}
               {activeDragItem.item.bullets && activeDragItem.item.bullets.length > 0 && (

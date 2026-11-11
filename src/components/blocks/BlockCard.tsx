@@ -42,34 +42,28 @@ export const BlockCard: React.FC<BlockCardProps> = ({
         isDragging ? 'border-dashed scale-[0.99]' : ''
       } ${scheme.cardBorder} ${scheme.cardBg} ${scheme.cardBorderHover} shadow-xs hover:shadow-md transition-all duration-200 overflow-hidden select-none`}
     >
-      {/* Top Bar with Grab Handle & Actions */}
-      <div className="flex items-center justify-between p-3.5 pb-2">
+      {/* Top Header: Grab Handle, Prominent Title, Actions & Collapse Chevron */}
+      <div className="flex items-start justify-between p-3.5 pb-2.5 gap-2">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {/* Draggable Grip Handle */}
           <button
             {...listeners}
             {...attributes}
             type="button"
-            className="cursor-grab active:cursor-grabbing p-1 rounded-lg text-[#7F867F] dark:text-[#8D958D] hover:text-[#222522] dark:hover:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+            className="cursor-grab active:cursor-grabbing p-1 -ml-1 rounded-lg text-[#7F867F] dark:text-[#8D958D] hover:text-[#222522] dark:hover:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors shrink-0"
             title="Drag to place into calendar slot"
           >
             <GripVertical className="w-4 h-4" />
           </button>
 
-          {/* Color Tag Badge */}
-          <span
-            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold tracking-wide uppercase ${scheme.badgeBg} ${scheme.badgeText}`}
-          >
-            <span
-              className="w-1.5 h-1.5 rounded-full"
-              style={{ backgroundColor: scheme.solid }}
-            />
-            {scheme.name}
-          </span>
+          {/* Bigger, Prominent Title */}
+          <h3 className="text-[15px] sm:text-base font-bold tracking-tight text-[#222522] dark:text-[#EDEBF2] leading-snug break-words flex-1 min-w-0">
+            {block.title}
+          </h3>
         </div>
 
-        {/* Action icons */}
-        <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+        {/* Action icons & expand/collapse toggle */}
+        <div className="flex items-center gap-0.5 opacity-80 group-hover:opacity-100 transition-opacity shrink-0">
           <button
             type="button"
             onClick={() => onDuplicate(block)}
@@ -94,28 +88,21 @@ export const BlockCard: React.FC<BlockCardProps> = ({
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
+          {block.bullets && block.bullets.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setExpanded(!expanded)}
+              className="p-1.5 rounded-lg text-[#7F867F] dark:text-[#8D958D] hover:text-[#222522] dark:hover:text-[#FFFFFF] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+              title={expanded ? 'Collapse' : 'Expand'}
+            >
+              {expanded ? (
+                <ChevronUp className="w-3.5 h-3.5" />
+              ) : (
+                <ChevronDown className="w-3.5 h-3.5" />
+              )}
+            </button>
+          )}
         </div>
-      </div>
-
-      {/* Block Header */}
-      <div className="px-3.5 pb-2 flex items-center justify-between">
-        <h3 className="text-sm font-semibold tracking-tight text-[#222522] dark:text-[#E5E3E0] leading-snug">
-          {block.title}
-        </h3>
-        {block.bullets && block.bullets.length > 0 && (
-          <button
-            type="button"
-            onClick={() => setExpanded(!expanded)}
-            className="text-[#888E88] dark:text-[#9E9B97] hover:text-[#222522] dark:hover:text-[#FFFFFF] p-1 rounded transition-colors"
-            title={expanded ? 'Collapse' : 'Expand'}
-          >
-            {expanded ? (
-              <ChevronUp className="w-3.5 h-3.5" />
-            ) : (
-              <ChevronDown className="w-3.5 h-3.5" />
-            )}
-          </button>
-        )}
       </div>
 
       {/* Bullets List */}

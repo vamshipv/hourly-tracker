@@ -68,33 +68,58 @@ const HourSlot: React.FC<HourSlotProps> = ({
   return (
     <div
       ref={setNodeRef}
-      className={`group relative flex items-start gap-3 sm:gap-4 p-3 rounded-2xl border transition-all duration-150 backdrop-blur-md ${
+      className={`group relative flex items-start gap-3 sm:gap-4 rounded-2xl transition-all duration-200 backdrop-blur-md ${
         isOver
-          ? 'bg-[#E5EEE6]/80 dark:bg-[#252233]/85 border-[#436249] dark:border-[#9D8EC9] shadow-md ring-2 ring-[#436249]/30 dark:ring-[#9D8EC9]/30'
+          ? 'p-3.5 bg-[#E5EEE6]/80 dark:bg-[#252233]/85 border-[#436249] dark:border-[#9D8EC9] shadow-md ring-2 ring-[#436249]/30 dark:ring-[#9D8EC9]/30 border'
           : isCurrentHour
-          ? 'bg-white/70 dark:bg-[#201F24]/75 border-[#B2C6B4] dark:border-[#4E4766] shadow-xs ring-1 ring-[#436249]/20 dark:ring-[#9D8EC9]/20'
-          : 'bg-white/30 dark:bg-[#161619]/40 border-black/10 dark:border-white/10 hover:bg-white/50 dark:hover:bg-[#201F24]/55 hover:border-black/20 dark:hover:border-white/20'
+          ? 'p-4 sm:p-5 bg-white/90 dark:bg-[#201F24]/90 border-[2.5px] border-[#FDE047] dark:border-[#FFE066] my-1.5 scale-[1.015]'
+          : 'p-3 bg-white/30 dark:bg-[#161619]/40 border border-black/10 dark:border-white/10 hover:bg-white/50 dark:hover:bg-[#201F24]/55 hover:border-black/20 dark:hover:border-white/20'
       }`}
     >
       {/* Time Label Column */}
-      <div className="w-16 sm:w-20 pt-1 shrink-0 select-none text-right">
-        <span className="text-xs sm:text-sm font-semibold tracking-tight text-[#222522] dark:text-[#EDEBF2]">
-          {time}
-        </span>
-        <span className="text-[10px] font-medium text-[#7A827A] dark:text-[#9E9AA8] ml-1 uppercase">
-          {period}
-        </span>
+      <div
+        className={`${
+          isCurrentHour ? 'w-20 sm:w-24' : 'w-16 sm:w-20'
+        } pt-1 shrink-0 select-none text-right flex flex-col items-end`}
+      >
+        <div className="flex items-baseline justify-end">
+          <span
+            className={`${
+              isCurrentHour
+                ? 'text-sm sm:text-base font-bold text-[#1E3023] dark:text-[#EDEBF2]'
+                : 'text-xs sm:text-sm font-semibold text-[#222522] dark:text-[#EDEBF2]'
+            } tracking-tight`}
+          >
+            {time}
+          </span>
+          <span
+            className={`${
+              isCurrentHour ? 'text-[11px] font-semibold' : 'text-[10px] font-medium'
+            } text-[#7A827A] dark:text-[#9E9AA8] ml-1 uppercase`}
+          >
+            {period}
+          </span>
+        </div>
         {isCurrentHour && (
-          <div className="text-[10px] font-bold text-[#436249] dark:text-[#D8E575] uppercase tracking-wider mt-0.5">
-            Now
-          </div>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 mt-1.5 rounded-full bg-[#F5F8E6] dark:bg-[#252818] border border-[#D5E29D] dark:border-[#4B5226]">
+            {/* Green dot beside the word */}
+            <span className="w-2 h-2 rounded-full bg-[#22C55E] dark:bg-[#22C55E] animate-pulse" />
+            {/* Pastel "Now" word */}
+            <span className="text-xs sm:text-[13px] font-black uppercase tracking-wider text-[#6B7E28] dark:text-[#E2EB89]">
+              Now
+            </span>
+          </span>
         )}
       </div>
 
       {/* Main Slot Container */}
       <div className="flex-1 min-w-0 space-y-2.5">
         {entries.length === 0 ? (
-          <div className="min-h-[58px] flex items-center justify-between px-3 py-2 rounded-xl border border-dashed border-black/15 dark:border-white/15 bg-white/25 dark:bg-black/20 text-xs text-[#3E433E] dark:text-[#C5BBE3] transition-colors group-hover:border-[#436249] dark:group-hover:border-[#9D8EC9]">
+          <div
+            className={`${
+              isCurrentHour ? 'min-h-[72px] px-3.5 py-3' : 'min-h-[58px] px-3 py-2'
+            } flex items-center justify-between rounded-xl border border-dashed border-black/15 dark:border-white/15 bg-white/25 dark:bg-black/20 text-xs text-[#3E433E] dark:text-[#C5BBE3] transition-colors group-hover:border-[#436249] dark:group-hover:border-[#9D8EC9]`}
+          >
             <span className="italic select-none">
               {isOver ? 'Drop block here' : 'Free slot — drag a block here or add'}
             </span>
